@@ -1,11 +1,12 @@
 import requests
 
 from typing import Dict
-from ..config import telegram_token_en, telegram_token_es
+from ..config import telegram_token_en, telegram_token_es, telegram_token_ru
 
 tokens = {
     'en': telegram_token_en,
-    'es': telegram_token_es
+    'es': telegram_token_es,
+    'ru': telegram_token_ru
 }
 
 
