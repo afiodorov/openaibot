@@ -27,7 +27,7 @@ def create_app():
             lang = lang[1:]
 
         if lang not in prompts:
-            lang = 'en'
+            lang = "en"
 
         given_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
         if given_token != telegram_secret:
@@ -45,7 +45,10 @@ def create_app():
         lobby.clean_up()
         if not lobby.is_allowed(user):
             telegram.send_text(
-                app.logger, from_, f"too many current users: {len(lobby.current_users)}"
+                app.logger,
+                from_,
+                f"too many current users: {len(lobby.current_users)}",
+                lang=lang,
             )
             return ""
 

@@ -7,28 +7,24 @@ from textwrap import dedent
 openai.api_key = openai_token
 
 prompts = {
-    'en': {
-        'start': '',
-        'human': 'Human',
-        'ai': 'AI'
+    "en": {"start": "", "human": "Human", "ai": "AI"},
+    "es": {
+        "start": "La siguiente es una conversación con un asistente de AI. El asistente es útil, creativo, inteligente y muy amigable.",
+        "human": "Humano",
+        "ai": "AI",
     },
-    'es': {
-        'start': 'La siguiente es una conversación con un asistente de AI. El asistente es útil, creativo, inteligente y muy amigable.',
-        'human': 'Humano',
-        'ai': 'AI'
+    "ru": {
+        "start": "Далее следует разговор с AI-помощником. Помощник услужливый, творческий, умный и очень дружелюбный.",
+        "human": "Человек",
+        "ai": "AI",
     },
-    'ru': {
-        'start': 'Далее следует разговор с AI-помощником. Помощник услужливый, творческий, умный и очень дружелюбный.',
-        'human': 'Человек',
-        'ai': 'AI'
-    }
 }
 
 
-def get_response(logging, msg: str, history, lang='en'):
-    start = prompts[lang]['start']
-    human = prompts[lang]['human']
-    ai = prompts[lang]['ai']
+def get_response(logging, msg: str, history, lang="en"):
+    start = prompts[lang]["start"]
+    human = prompts[lang]["human"]
+    ai = prompts[lang]["ai"]
 
     historical_dialogue = "\n".join(
         f"{human}: {i.request}\n{ai}: {i.response}" for i in history
