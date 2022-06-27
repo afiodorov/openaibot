@@ -37,6 +37,7 @@ def create_app():
             telegram.send_text(
                 app.logger, from_, f"too many current users: {len(lobby.current_users)}"
             )
+            return ""
 
         history = state[user]
         resp = get_response(logging, body, history)
