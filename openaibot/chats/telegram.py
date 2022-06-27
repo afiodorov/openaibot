@@ -1,7 +1,12 @@
 import requests
 
 from typing import Dict
-from ..config import telegram_token
+from ..config import telegram_token_en, telegram_token_es
+
+tokens = {
+    'en': telegram_token_en,
+    'es': telegram_token_es
+}
 
 
 def parse_received(logger, msg: Dict):
@@ -14,7 +19,12 @@ def parse_received(logger, msg: Dict):
         return None, None
 
 
-def send_text(logger, to: str, body: str):
+def send_text(logger, to: str, body: str, lang='en'):
+    if not lang in tokens:
+        logger.error(f"no token for lang {lang}")
+        return
+
+    telegram_token = tokens[lang]
     url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
 
     msg = {

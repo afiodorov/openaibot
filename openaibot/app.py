@@ -2,7 +2,7 @@ import sys
 import json
 import logging
 from flask import Flask, abort, request
-from .ai import get_response
+from .ai import get_response, prompts
 
 from .config import telegram_secret
 from .state import Interaction, state
@@ -21,17 +21,27 @@ def create_app():
 
     lobby = Lobby(app.logger)
 
-    @app.route("/twebhook", methods=["POST"])
-    def webhook_telegram():
+    @app.route("/twebhoo<lang>", methods=["POST"])
+    def webhook_telegram_en(lang):
+        if len(lang) > 0:
+            lang = lang[1:]
+
+        if lang not in prompts:
+            lang = 'en'
+
         given_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
         if given_token != telegram_secret:
             abort(403)
 
         from_, body = telegram.parse_received(app.logger, request.json)
-        if from_ is None:
+        if body == "/start":
             return ""
 
-        user = f"telegram:{from_}"
+        if from_ is None:
+            logging.info(f"invalid message: {request.json}")
+            return ""
+
+        user = f"telegram:{lang}:{from_}"
         lobby.clean_up()
         if not lobby.is_allowed(user):
             telegram.send_text(
@@ -40,11 +50,11 @@ def create_app():
             return ""
 
         history = state[user]
-        resp = get_response(logging, body, history)
+        resp = get_response(logging, body, history, lang=lang)
         history.append(Interaction(request=body, response=resp))
         lobby.register(user)
 
-        telegram.send_text(app.logger, from_, resp)
+        telegram.send_text(app.logger, from_, resp, lang=lang)
 
         return ""
 
