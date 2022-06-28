@@ -51,6 +51,6 @@ def get_response(logging, msg: str, history, lang="en"):
     )
 
     reply = response["choices"][0]["text"]
-    reply = reply.split("\n{human}:")[0]
+    reply = reply.split(f"\n{human}:")[0]
 
     return reply.strip()
