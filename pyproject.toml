@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "openaibot"
+version = "0.1.0"
+description = ""
+authors = ["Tom Fiodorov"]
+license = "MIT"
+packages = [
+    { include = "openaibot" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "^0.20.0"
+requests = "^2.28.1"
+Flask = "^2.1.2"
+waitress = "^2.1.2"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+mypy = "^0.961"
+flake8 = "^4.0.1"
+flake8-isort = "^4.1.1"
+types-requests = "^2.28.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from collections import defaultdict, deque
+from dataclasses import dataclass
+from typing import DefaultDict, Deque
 
 
 @dataclass
@@ -10,4 +11,6 @@ class Interaction:
 
 num_interactions_remembered = 5
 
-state = defaultdict(lambda: deque([], num_interactions_remembered))
+state: DefaultDict[str, Deque[Interaction]] = defaultdict(
+    lambda: deque([], num_interactions_remembered)
+)
