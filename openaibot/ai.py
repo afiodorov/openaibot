@@ -1,5 +1,4 @@
 import logging
-import os
 from textwrap import dedent
 from typing import Iterable
 
@@ -7,7 +6,7 @@ import openai
 import requests
 from requests.auth import HTTPBasicAuth
 
-from .config import openai_token
+from .config import gpt_pass, gpt_url, gpt_user, openai_token
 from .state import Interaction
 
 openai.api_key = openai_token
@@ -97,8 +96,8 @@ def get_response_new(
     headers = {"Content-Type": "application/json"}
 
     resp = requests.post(
-        "http://31.12.82.146:22646",
-        auth=HTTPBasicAuth(os.getenv("GPT_USER"), os.getenv("GPT_PASS")),
+        gpt_url,
+        auth=HTTPBasicAuth(gpt_user, gpt_pass),
         json={"prompt": prompt},
         headers=headers,
     )
