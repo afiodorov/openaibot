@@ -1,6 +1,8 @@
 import logging
+from datetime import datetime, timezone
 
 from flask import Flask, abort, request
+from pythonjsonlogger import jsonlogger
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .ai import get_response_new
@@ -10,11 +12,26 @@ from .lobby import Lobby
 from .state import Interaction, state
 
 
+def setup_log():
+    class ISOJsonFormatter(jsonlogger.JsonFormatter):
+        def formatTime(self, record, datefmt=None) -> str:
+            dt = datetime.fromtimestamp(record.created, timezone.utc)
+            return dt.isoformat() + "Z"
+
+    logger = logging.getLogger()
+
+    logHandler = logging.StreamHandler()
+    formatter = ISOJsonFormatter("%(asctime)s %(levelname)s %(message)s")
+    logHandler.setFormatter(formatter)
+    logger.addHandler(logHandler)
+    logger.level = logging.INFO
+
+
 def create_app() -> Flask:
+    setup_log()
+
     app = Flask(__name__)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)  # type: ignore
-
-    logging.basicConfig(level=logging.INFO)
 
     lobby = Lobby(app.logger)
 
