@@ -1,4 +1,5 @@
 import logging
+import re
 from textwrap import dedent
 from typing import Iterable
 
@@ -13,7 +14,11 @@ openai.api_key = openai_token
 
 prompts = {
     "en": {
-        "start": "Following conversation is between a human and AI Assistant.",
+        "start": (
+            "Let's follow this conversation between a human and AI Assistant."
+            " AI Assistant works out every question in a step by step way to be sure it gives"
+            " the right answer"
+        ),
         "human": "Human",
         "ai": "AI Assistant",
     },
@@ -34,6 +39,29 @@ prompts = {
         "ai": "AI",
     },
 }
+
+
+def remove_last_unmatched_bracket(text):
+    counter = 0
+
+    for char in text:
+        if char == "{":
+            counter += 1
+        elif char == "}":
+            counter -= 1
+
+    if counter < 0:
+        return text.rstrip("}")
+
+    return text
+
+
+def clean_up(resp):
+    pattern = r"\n\s*(?!(?:Example:))([A-Z][a-z]+:)"
+    split_text = re.split(pattern, resp)
+    text_before_match = split_text[0]
+
+    return remove_last_unmatched_bracket(text_before_match.strip())
 
 
 def get_response(
@@ -68,9 +96,8 @@ def get_response(
     )
 
     reply = str(response["choices"][0]["text"])
-    reply = reply.split(f"\n{human}:")[0]
 
-    return reply.strip()
+    return clean_up(reply)
 
 
 def get_response_new(
@@ -103,7 +130,4 @@ def get_response_new(
         logging.error(resp.text)
         return ""
 
-    reply = resp.json()["completion"]
-    reply = reply.split(f"\n{human}:")[0]
-
-    return reply.strip()
+    return clean_up(resp.json()["completion"])
