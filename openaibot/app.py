@@ -44,6 +44,11 @@ def create_app() -> Flask:
             return ""
 
         history = state[user]
+
+        if body == "/clear":
+            history.clear()
+            return ""
+
         resp = get_response_new(app.logger, body, history, lang=lang)
         history.append(Interaction(request=body, response=resp))
         lobby.register(user)
