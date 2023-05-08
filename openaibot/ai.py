@@ -93,13 +93,10 @@ def get_response_new(
     """.strip()
     )
 
-    headers = {"Content-Type": "application/json"}
-
     resp = requests.post(
         gpt_url,
         auth=HTTPBasicAuth(gpt_user, gpt_pass),
         json={"prompt": prompt},
-        headers=headers,
     )
 
     if not resp.ok:
