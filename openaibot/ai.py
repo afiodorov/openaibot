@@ -1,8 +1,11 @@
 import logging
+import os
 from textwrap import dedent
 from typing import Iterable
 
 import openai
+import requests
+from requests.auth import HTTPBasicAuth
 
 from .config import openai_token
 from .state import Interaction
@@ -10,7 +13,11 @@ from .state import Interaction
 openai.api_key = openai_token
 
 prompts = {
-    "en": {"start": "", "human": "Human", "ai": "AI"},
+    "en": {
+        "start": "Following conversation is between a human and AI Assistant.",
+        "human": "Human",
+        "ai": "AI Assistant",
+    },
     "es": {
         "start": (
             "La siguiente es una conversación con un asistente de AI. El asistente es útil,"
@@ -37,7 +44,9 @@ def get_response(
     human = prompts[lang]["human"]
     ai = prompts[lang]["ai"]
 
-    historical_dialogue = "\n".join(f"{human}: {i.request}\n{ai}: {i.response}" for i in history)
+    historical_dialogue = "\n".join(
+        f"{human}: {i.request}\n{ai}: {i.response}" for i in history
+    )
 
     prompt = dedent(
         f"""\
@@ -60,6 +69,45 @@ def get_response(
     )
 
     reply = str(response["choices"][0]["text"])
+    reply = reply.split(f"\n{human}:")[0]
+
+    return reply.strip()
+
+
+def get_response_new(
+    logging: logging.Logger, msg: str, history: Iterable[Interaction], lang: str = "en"
+) -> str:
+    start = prompts[lang]["start"]
+    human = prompts[lang]["human"]
+    ai = prompts[lang]["ai"]
+
+    historical_dialogue = "\n".join(
+        f"{human}: {i.request}\n{ai}: {i.response}" for i in history
+    )
+
+    prompt = dedent(
+        f"""\
+{start}
+{historical_dialogue}
+{human}: {msg}
+{ai}:
+    """.strip()
+    )
+
+    headers = {"Content-Type": "application/json"}
+
+    resp = requests.post(
+        "http://31.12.82.146:22646",
+        auth=HTTPBasicAuth(os.getenv("GPT_USER"), os.getenv("GPT_PASS")),
+        json={"prompt": prompt},
+        headers=headers,
+    )
+
+    if not resp.ok:
+        logging.error(resp.text)
+        return ""
+
+    reply = resp.json()["completion"]
     reply = reply.split(f"\n{human}:")[0]
 
     return reply.strip()

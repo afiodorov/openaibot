@@ -3,7 +3,7 @@ import logging
 from flask import Flask, abort, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from .ai import get_response, prompts
+from .ai import get_response_new
 from .chats import telegram
 from .config import telegram_secret
 from .lobby import Lobby
@@ -18,14 +18,8 @@ def create_app() -> Flask:
 
     lobby = Lobby(app.logger)
 
-    @app.route("/twebhoo<lang>", methods=["POST"])
+    @app.route("/twebhook<lang>", methods=["POST"])
     def webhook_telegram(lang: str) -> str:
-        if len(lang) > 0:
-            lang = lang[1:]
-
-        if lang not in prompts:
-            lang = "en"
-
         given_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
         if given_token != telegram_secret:
             abort(403)
@@ -50,7 +44,7 @@ def create_app() -> Flask:
             return ""
 
         history = state[user]
-        resp = get_response(app.logger, body, history, lang=lang)
+        resp = get_response_new(app.logger, body, history, lang=lang)
         history.append(Interaction(request=body, response=resp))
         lobby.register(user)
 

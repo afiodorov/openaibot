@@ -4,7 +4,7 @@ from typing import Dict
 
 from .config import user_whitelist
 
-max_num_users = 5
+max_num_users = 15
 
 
 class Lobby:

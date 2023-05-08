@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 openai_token = os.getenv("OPENAIBOT_OPENAI_API_KEY", "")
 
 telegram_token_en = os.getenv("OPENAIBOT_TELEGRAM_TOKEN_EN", "")
