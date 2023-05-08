@@ -9,7 +9,7 @@ class Interaction:
     response: str
 
 
-num_interactions_remembered = 10
+num_interactions_remembered = 5
 
 state: DefaultDict[str, Deque[Interaction]] = defaultdict(
     lambda: deque([], num_interactions_remembered)
