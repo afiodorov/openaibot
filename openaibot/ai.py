@@ -41,7 +41,7 @@ prompts = {
 }
 
 
-def remove_last_unmatched_bracket(text):
+def remove_last_unmatched_bracket(text: str) -> str:
     counter = 0
 
     for char in text:
@@ -56,7 +56,7 @@ def remove_last_unmatched_bracket(text):
     return text
 
 
-def clean_up(resp):
+def clean_up(resp: str) -> str:
     pattern = r"\n\s*(?!(?:Example:))([A-Z][a-z]+:)"
     split_text = re.split(pattern, resp)
     text_before_match = split_text[0]
@@ -130,4 +130,4 @@ def get_response_new(
         logging.error(resp.text)
         return ""
 
-    return clean_up(resp.json()["completion"])
+    return clean_up(resp.json().get("completion", ""))
