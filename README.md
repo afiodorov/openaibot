@@ -18,3 +18,7 @@ Made for fun
 # Example
 
 ![screnshot](./example.png)
+
+# Update 2023-05
+
+Now supports local LLM's.
