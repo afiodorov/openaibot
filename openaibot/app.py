@@ -14,6 +14,9 @@ from .state import Interaction, state
 
 def setup_log():
     class ISOJsonFormatter(jsonlogger.JsonFormatter):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
         def formatTime(self, record, datefmt=None) -> str:
             dt = datetime.fromtimestamp(record.created, timezone.utc)
             return dt.isoformat() + "Z"
@@ -21,7 +24,9 @@ def setup_log():
     logger = logging.getLogger()
 
     logHandler = logging.StreamHandler()
-    formatter = ISOJsonFormatter("%(asctime)s %(levelname)s %(message)s")
+    formatter = ISOJsonFormatter(
+        "%(asctime)s %(levelname)s %(message)s", json_ensure_ascii=False
+    )
     logHandler.setFormatter(formatter)
     logger.addHandler(logHandler)
     logger.level = logging.INFO
