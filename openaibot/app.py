@@ -5,10 +5,9 @@ from flask import Flask, abort, request
 from pythonjsonlogger import jsonlogger
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from .ai import get_response_new
 from .chats import telegram
 from .config import telegram_secret
-from .lobby import Lobby
+from .lobby import Lobby, Model
 from .state import Interaction, state
 
 
@@ -31,6 +30,13 @@ def setup_log():
     logger.addHandler(logHandler)
     logger.level = logging.INFO
 
+help_msg = """APP: Welcome! Commands:
+/clear - Make the bot forget forget history.
+/gpt - Switch to OpenAI GPT3.5 model (whitelisted only).
+/local - Switch to local model.
+/help - Show this messasge.
+""".strip()
+
 
 def create_app() -> Flask:
     setup_log()
@@ -47,7 +53,8 @@ def create_app() -> Flask:
             abort(403)
 
         from_, body = telegram.parse_received(app.logger, request.json)
-        if body == "/start":
+        if body == "/start" or body == '/help':
+            telegram.send_text(app.logger, from_, help_msg, lang=lang)
             return ""
 
         if from_ is None or body is None:
@@ -69,9 +76,22 @@ def create_app() -> Flask:
 
         if body == "/clear":
             history.clear()
+            telegram.send_text(app.logger, from_, "APP: History cleared", lang=lang)
             return ""
 
-        resp = get_response_new(app.logger, body, history, lang=lang)
+        if body == "/gpt":
+            lobby.switch_user(user, Model.GPT3)
+            telegram.send_text(app.logger, from_, "APP: Switched to GPT3", lang=lang)
+            return ""
+
+        if body == "/local":
+            lobby.switch_user(user, Model.LOCAL)
+            telegram.send_text(app.logger, from_, "APP: Switched to LOCAL", lang=lang)
+            return ""
+
+        app.logger.info(f"{user}")
+
+        resp = lobby.inference[user](app.logger, body, history, lang=lang)
         history.append(Interaction(request=body, response=resp))
         lobby.register(user)
 

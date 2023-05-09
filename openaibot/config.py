@@ -14,6 +14,6 @@ telegram_secret = os.getenv("OPENAIBOT_TELEGRAM_SECRET", "")
 
 user_whitelist = os.getenv("OPENAIBOT_USER_WHITELIST", "").split(",")
 
-gpt_user = os.getenv("GPT_USER", "")
-gpt_pass = os.getenv("GPT_PASS", "")
-gpt_url = os.getenv("GPT_URL", "")
+gpt_user = os.getenv("OPENAIBOT_GPT_USER", "")
+gpt_pass = os.getenv("OPENAIBOT_GPT_PASS", "")
+gpt_url = os.getenv("OPENAIBOT_GPT_URL", "")

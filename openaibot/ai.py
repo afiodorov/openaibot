@@ -64,7 +64,7 @@ def clean_up(resp: str) -> str:
     return remove_last_unmatched_bracket(text_before_match.strip())
 
 
-def get_response(
+def get_response_openai(
     logging: logging.Logger, msg: str, history: Iterable[Interaction], lang: str = "en"
 ) -> str:
     start = prompts[lang]["start"]
@@ -85,11 +85,12 @@ def get_response(
     )
 
     response = openai.Completion.create(
-        model="text-davinci-002",
+        model="text-davinci-003",
         prompt=prompt,
         temperature=0.9,
-        max_tokens=400,
+        max_tokens=2048,
         top_p=1,
+        best_of=3,
         frequency_penalty=0,
         presence_penalty=0.6,
         stop=[f" {human}:", f" {ai}:"],
@@ -100,7 +101,7 @@ def get_response(
     return clean_up(reply)
 
 
-def get_response_new(
+def get_response_local(
     logging: logging.Logger, msg: str, history: Iterable[Interaction], lang: str = "en"
 ) -> str:
     start = prompts[lang]["start"]
