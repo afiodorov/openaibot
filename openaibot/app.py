@@ -73,15 +73,6 @@ def create_app() -> Flask:
             return ""
 
         user = f"telegram:{lang}:{from_}"
-        lobby.clean_up()
-        if not lobby.is_allowed(user):
-            telegram.send_text(
-                app.logger,
-                from_,
-                f"too many current users: {len(lobby.current_users)}",
-                lang=lang,
-            )
-            return ""
 
         history = state[user]
 
@@ -102,6 +93,16 @@ def create_app() -> Flask:
                 telegram.send_text(
                     app.logger, from_, "APP: Switched to LOCAL", lang=lang
                 )
+            return ""
+
+        lobby.clean_up()
+        if not lobby.is_allowed(user):
+            telegram.send_text(
+                app.logger,
+                from_,
+                f"APP: Too many current users: {len(lobby.current_users)}",
+                lang=lang,
+            )
             return ""
 
         resp = lobby.inference[user](app.logger, body, history, lang=lang)
