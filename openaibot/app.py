@@ -89,8 +89,6 @@ def create_app() -> Flask:
             telegram.send_text(app.logger, from_, "APP: Switched to LOCAL", lang=lang)
             return ""
 
-        app.logger.info(f"{user}")
-
         resp = lobby.inference[user](app.logger, body, history, lang=lang)
         history.append(Interaction(request=body, response=resp))
         lobby.register(user)
