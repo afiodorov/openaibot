@@ -35,6 +35,9 @@ class Lobby:
             lambda: get_response_local
         )
 
+        for user in user_whitelist[1:]:
+            self.inference[user] = get_response_openai
+
     def clean_up(self) -> None:
         now = datetime.now(timezone.utc)
         self.current_users = {
