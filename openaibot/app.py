@@ -80,13 +80,13 @@ def create_app() -> Flask:
             return ""
 
         if body == "/gpt":
-            lobby.switch_user(user, Model.GPT3)
-            telegram.send_text(app.logger, from_, "APP: Switched to GPT3", lang=lang)
+            if lobby.switch_user(user, Model.GPT3):
+                telegram.send_text(app.logger, from_, "APP: Switched to GPT3", lang=lang)
             return ""
 
         if body == "/local":
-            lobby.switch_user(user, Model.LOCAL)
-            telegram.send_text(app.logger, from_, "APP: Switched to LOCAL", lang=lang)
+            if lobby.switch_user(user, Model.LOCAL):
+                telegram.send_text(app.logger, from_, "APP: Switched to LOCAL", lang=lang)
             return ""
 
         resp = lobby.inference[user](app.logger, body, history, lang=lang)
