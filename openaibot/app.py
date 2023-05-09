@@ -30,6 +30,7 @@ def setup_log():
     logger.addHandler(logHandler)
     logger.level = logging.INFO
 
+
 help_msg = """APP: Welcome! Commands:
 /clear - Make the bot forget forget history.
 /gpt - Switch to OpenAI GPT3.5 model (whitelisted only).
@@ -46,6 +47,11 @@ def create_app() -> Flask:
 
     lobby = Lobby(app.logger)
 
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        app.logger.exception("Exception occurred")
+        return "uncaught exception", 500
+
     @app.route("/twebhook<lang>", methods=["POST"])
     def webhook_telegram(lang: str) -> str:
         given_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
@@ -53,7 +59,7 @@ def create_app() -> Flask:
             abort(403)
 
         from_, body = telegram.parse_received(app.logger, request.json)
-        if body == "/start" or body == '/help':
+        if body == "/start" or body == "/help":
             telegram.send_text(app.logger, from_, help_msg, lang=lang)
             return ""
 
@@ -81,12 +87,16 @@ def create_app() -> Flask:
 
         if body == "/gpt":
             if lobby.switch_user(user, Model.GPT3):
-                telegram.send_text(app.logger, from_, "APP: Switched to GPT3", lang=lang)
+                telegram.send_text(
+                    app.logger, from_, "APP: Switched to GPT3", lang=lang
+                )
             return ""
 
         if body == "/local":
             if lobby.switch_user(user, Model.LOCAL):
-                telegram.send_text(app.logger, from_, "APP: Switched to LOCAL", lang=lang)
+                telegram.send_text(
+                    app.logger, from_, "APP: Switched to LOCAL", lang=lang
+                )
             return ""
 
         resp = lobby.inference[user](app.logger, body, history, lang=lang)
