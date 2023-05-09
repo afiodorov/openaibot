@@ -1,8 +1,10 @@
 import logging
 from datetime import datetime, timezone
+from http import HTTPStatus
 
 from flask import Flask, abort, request
 from pythonjsonlogger import jsonlogger
+from werkzeug.exceptions import NotFound
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .chats import telegram
@@ -49,14 +51,17 @@ def create_app() -> Flask:
 
     @app.errorhandler(Exception)
     def handle_exception(e):
+        if isinstance(e, NotFound):
+            return "Not Found", HTTPStatus.NOT_FOUND
+
         app.logger.exception("Exception occurred")
-        return "uncaught exception", 500
+        return "uncaught exception", HTTPStatus.INTERNAL_SERVER_ERROR
 
     @app.route("/twebhook<lang>", methods=["POST"])
     def webhook_telegram(lang: str) -> str:
         given_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
         if given_token != telegram_secret:
-            abort(403)
+            abort(HTTPStatus.FORBIDDEN)
 
         from_, body = telegram.parse_received(app.logger, request.json)
         if body == "/start" or body == "/help":
