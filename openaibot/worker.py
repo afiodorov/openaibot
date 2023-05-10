@@ -1,41 +1,27 @@
-import heapq
-from threading import Condition, Thread
+from dataclasses import dataclass, field
+from queue import PriorityQueue
+from threading import Thread
+from typing import Callable
 
 
-class Task:
-    def __init__(self, priority, func):
-        self.priority = priority
-        self.func = func
-
-    def __lt__(self, other):
-        return self.priority < other.priority
-
-    def __call__(self):
-        return self.func()
+@dataclass(order=True)
+class PrioritizedItem:
+    priority: int
+    func: Callable = field(compare=False)
 
 
 class Worker:
     def __init__(self):
-        self._task_queue: [Task] = []
-        self._queue_condition: Condition = Condition()
+        self._q = PriorityQueue()
 
-    def run(self) -> Thread:
-        worker_thread = Thread(target=self._run)
-        worker_thread.start()
+    def run(self) -> None:
+        Thread(target=self._run, daemon=True).start()
 
-        return worker_thread
-
-    def _run(self):
+    def _run(self) -> None:
         while True:
-            with self._queue_condition:
-                while not self._task_queue:
-                    self._queue_condition.wait()
-                task = heapq.heappop(self._task_queue)
-            if task is None:
-                break
-            task()
+            item = self._q.get()
+            item.func()
+            self._q.task_done()
 
     def push(self, priority, task) -> None:
-        heapq.heappush(self._task_queue, Task(priority, task))
-        with self._queue_condition:
-            self._queue_condition.notify()
+        self._q.put(PrioritizedItem(priority=priority, func=task))

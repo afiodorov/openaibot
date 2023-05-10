@@ -8,7 +8,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .chats import telegram
-from .config import telegram_secret
+from .config import telegram_secret, user_whitelist
 from .lobby import Lobby, Model
 from .state import Interaction, state
 from .worker import Worker
@@ -123,8 +123,7 @@ def create_app() -> Flask:
             lobby.register(user)
             telegram.send_text(app.logger, from_, resp, lang=lang)
 
-        worker.push(1, send_reply)
-        # send_reply()
+        worker.push(1 if user not in user_whitelist else 10, send_reply)
 
         return ""
 
