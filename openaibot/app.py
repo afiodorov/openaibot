@@ -11,6 +11,7 @@ from .chats import telegram
 from .config import telegram_secret
 from .lobby import Lobby, Model
 from .state import Interaction, state
+from .worker import Worker
 
 
 def setup_log():
@@ -48,6 +49,9 @@ def create_app() -> Flask:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)  # type: ignore
 
     lobby = Lobby(app.logger)
+    worker = Worker()
+
+    worker.run()
 
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -64,12 +68,13 @@ def create_app() -> Flask:
             abort(HTTPStatus.FORBIDDEN)
 
         from_, body = telegram.parse_received(app.logger, request.json)
-        if body == "/start" or body == "/help":
-            telegram.send_text(app.logger, from_, help_msg, lang=lang)
-            return ""
 
         if from_ is None or body is None:
             app.logger.info(f"invalid message: {request.json}")
+            return ""
+
+        if body == "/start" or body == "/help":
+            telegram.send_text(app.logger, from_, help_msg, lang=lang)
             return ""
 
         user = f"telegram:{lang}:{from_}"
@@ -95,6 +100,13 @@ def create_app() -> Flask:
                 )
             return ""
 
+        if body == "/cheap":
+            if lobby.switch_user(user, Model.CHEAP):
+                telegram.send_text(
+                    app.logger, from_, "APP: Switched to CHEAP", lang=lang
+                )
+            return ""
+
         lobby.clean_up()
         if not lobby.is_allowed(user):
             telegram.send_text(
@@ -105,11 +117,14 @@ def create_app() -> Flask:
             )
             return ""
 
-        resp = lobby.inference[user](app.logger, body, history, lang=lang)
-        history.append(Interaction(request=body, response=resp))
-        lobby.register(user)
+        def send_reply():
+            resp = lobby.inference[user](app.logger, body, history, lang=lang)
+            history.append(Interaction(request=body, response=resp))
+            lobby.register(user)
+            telegram.send_text(app.logger, from_, resp, lang=lang)
 
-        telegram.send_text(app.logger, from_, resp, lang=lang)
+        worker.push(1, send_reply)
+        # send_reply()
 
         return ""
 
