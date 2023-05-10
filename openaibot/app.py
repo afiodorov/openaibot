@@ -100,13 +100,6 @@ def create_app() -> Flask:
                 )
             return ""
 
-        if body == "/cheap":
-            if lobby.switch_user(user, Model.CHEAP):
-                telegram.send_text(
-                    app.logger, from_, "APP: Switched to CHEAP", lang=lang
-                )
-            return ""
-
         lobby.clean_up()
         if not lobby.is_allowed(user):
             telegram.send_text(
@@ -123,7 +116,7 @@ def create_app() -> Flask:
             lobby.register(user)
             telegram.send_text(app.logger, from_, resp, lang=lang)
 
-        worker.push(1 if user not in user_whitelist else 10, send_reply)
+        worker.push(1 if user in user_whitelist else 10, send_reply)
 
         return ""
 
