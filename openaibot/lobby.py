@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import DefaultDict, Dict, Iterable, Protocol
 
-from .ai import get_response_local, get_response_openai
-from .config import user_whitelist
+from .ai import LocalInference, get_response_openai
+from .config import gpt4_url, gpt_url, user_whitelist
 from .state import Interaction
 
 max_num_users = 15
@@ -14,6 +14,7 @@ max_num_users = 15
 class Model(Enum):
     GPT3 = 1
     LOCAL = 2
+    NEW = 3
 
 
 class Inference(Protocol):
@@ -25,6 +26,10 @@ class Inference(Protocol):
         lang: str = "en",
     ) -> str:
         pass
+
+
+get_response_local = LocalInference(gpt_url).inference
+get_response_local_new = LocalInference(gpt4_url).inference
 
 
 class Lobby:
@@ -73,6 +78,10 @@ class Lobby:
 
         if model == Model.LOCAL:
             self.inference[user] = get_response_local
+            return True
+
+        if model == Model.NEW:
+            self.inference[user] = get_response_local_new
             return True
 
         return False

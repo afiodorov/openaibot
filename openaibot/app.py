@@ -100,6 +100,11 @@ def create_app() -> Flask:
                 )
             return ""
 
+        if body == "/new":
+            if lobby.switch_user(user, Model.NEW):
+                telegram.send_text(app.logger, from_, "APP: Switched to NEW", lang=lang)
+            return ""
+
         lobby.clean_up()
         if not lobby.is_allowed(user):
             telegram.send_text(

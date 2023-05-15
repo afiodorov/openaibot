@@ -18,4 +18,4 @@ gpt_user = os.getenv("OPENAIBOT_GPT_USER", "")
 gpt_pass = os.getenv("OPENAIBOT_GPT_PASS", "")
 gpt_url = os.getenv("OPENAIBOT_GPT_URL", "")
 
-gpt_cheap_url = os.getenv("OPENAIBOT_GPT_CHEAP_URL", "")
+gpt4_url = os.getenv("OPENAIBOT_GPT4_URL", "")

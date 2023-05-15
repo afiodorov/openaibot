@@ -7,7 +7,7 @@ import openai
 import requests
 from requests.auth import HTTPBasicAuth
 
-from .config import gpt_cheap_url, gpt_pass, gpt_user, openai_token
+from .config import gpt_pass, gpt_user, openai_token
 from .state import Interaction
 
 openai.api_key = openai_token
@@ -101,34 +101,43 @@ def get_response_openai(
     return clean_up(reply)
 
 
-def get_response_local(
-    logging: logging.Logger, msg: str, history: Iterable[Interaction], lang: str = "en"
-) -> str:
-    start = prompts[lang]["start"]
-    human = prompts[lang]["human"]
-    ai = prompts[lang]["ai"]
+class LocalInference:
+    def __init__(self, url):
+        self.url = url
 
-    historical_dialogue = "\n".join(
-        f"{human}: {i.request}\n{ai}: {i.response}" for i in history
-    )
+    def inference(
+        self,
+        logging: logging.Logger,
+        msg: str,
+        history: Iterable[Interaction],
+        lang: str = "en",
+    ) -> str:
 
-    prompt = dedent(
-        f"""\
+        start = prompts[lang]["start"]
+        human = prompts[lang]["human"]
+        ai = prompts[lang]["ai"]
+
+        historical_dialogue = "\n".join(
+            f"{human}: {i.request}\n{ai}: {i.response}" for i in history
+        )
+
+        prompt = dedent(
+            f"""\
 {start}
 {historical_dialogue}
 {human}: {msg}
 {ai}:
-    """.strip()
-    )
+        """.strip()
+        )
 
-    resp = requests.post(
-        gpt_cheap_url,
-        auth=HTTPBasicAuth(gpt_user, gpt_pass),
-        json={"prompt": prompt},
-    )
+        resp = requests.post(
+            self.url,
+            auth=HTTPBasicAuth(gpt_user, gpt_pass),
+            json={"prompt": prompt},
+        )
 
-    if not resp.ok:
-        logging.error(resp.text)
-        return ""
+        if not resp.ok:
+            logging.error(resp.text)
+            return ""
 
-    return clean_up(resp.json().get("completion", ""))
+        return clean_up(resp.json().get("completion", ""))
