@@ -17,5 +17,4 @@ user_whitelist = os.getenv("OPENAIBOT_USER_WHITELIST", "").split(",")
 gpt_user = os.getenv("OPENAIBOT_GPT_USER", "")
 gpt_pass = os.getenv("OPENAIBOT_GPT_PASS", "")
 gpt_url = os.getenv("OPENAIBOT_GPT_URL", "")
-
 gpt4_url = os.getenv("OPENAIBOT_GPT4_URL", "")

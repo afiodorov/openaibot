@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from logging import Logger
 from queue import PriorityQueue
 from threading import Thread
 from typing import Callable
@@ -11,8 +12,9 @@ class PrioritizedItem:
 
 
 class Worker:
-    def __init__(self):
-        self._q = PriorityQueue()
+    def __init__(self, logger: Logger):
+        self.logger = logger
+        self._q: PriorityQueue = PriorityQueue()
 
     def run(self) -> None:
         Thread(target=self._run, daemon=True).start()
@@ -20,8 +22,12 @@ class Worker:
     def _run(self) -> None:
         while True:
             item = self._q.get()
-            item.func()
-            self._q.task_done()
+            try:
+                item.func()
+            except Exception:
+                self.logger.exception("Exception occurred")
+            finally:
+                self._q.task_done()
 
     def push(self, priority, task) -> None:
         self._q.put(PrioritizedItem(priority=priority, func=task))

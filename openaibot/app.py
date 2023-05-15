@@ -49,7 +49,7 @@ def create_app() -> Flask:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)  # type: ignore
 
     lobby = Lobby(app.logger)
-    worker = Worker()
+    worker = Worker(app.logger)
 
     worker.run()
 
