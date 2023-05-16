@@ -116,10 +116,14 @@ def create_app() -> Flask:
             return ""
 
         def send_reply():
-            resp = lobby.inference[user](app.logger, body, history, lang=lang)
-            history.append(Interaction(request=body, response=resp))
-            lobby.register(user)
-            telegram.send_text(app.logger, from_, resp, lang=lang)
+            try:
+                resp = lobby.inference[user](app.logger, body, history, lang=lang)
+            except Exception:
+                telegram.send_text(app.logger, from_, "APP: internal problem", lang=lang)
+            else:
+                history.append(Interaction(request=body, response=resp))
+                lobby.register(user)
+                telegram.send_text(app.logger, from_, resp, lang=lang)
 
         worker.push(1 if user in user_whitelist else 10, send_reply)
 
