@@ -119,7 +119,13 @@ def create_app() -> Flask:
             try:
                 resp = lobby.inference[user](app.logger, body, history, lang=lang)
             except Exception:
-                telegram.send_text(app.logger, from_, "APP: internal problem", lang=lang)
+                app.logger.exception("Exception occurred when getting response")
+                telegram.send_text(
+                    app.logger,
+                    from_,
+                    "APP: internal problem, come back later",
+                    lang=lang,
+                )
             else:
                 history.append(Interaction(request=body, response=resp))
                 lobby.register(user)
